@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Centralizar SVG</title>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      background-image: url('Mar.jpg');
+
+      background-size: cover; /* Ajusta o tamanho para cobrir toda a tela */
+      background-repeat: repeat; /* Repete a imagem na página */
+    }
+
+    #svgObject {
+      max-width: 100%;
+      max-height: 100%;
+    }
+  </style>
+</head>
+<body>
+  
+  <object id="svgObject" type="image/svg+xml" data="/IMAGE/Mundi.svg"></object>
+  
+  <script src="/Partida/Partida.js"></script> <!-- Certifique-se de que o script Partida.js é carregado primeiro -->
+
+  <script>
+    // Função para identificar e destacar territórios
+
+    const svgObject = document.getElementById('svgObject');
+    svgObject.onload = svgLoaded;
+
+    function svgLoaded() {
+        console.log("SVG carregado");
+        aplicarCores();
+    }
+
+ 
+
+    document.addEventListener('DOMContentLoaded', function() {
+      identificarTerritorios();
+    }); 
+
+   // Chamar a função para atribuir IDs numéricos aos paths
+   document.addEventListener('DOMContentLoaded', function() {
+    atribuirIDsNumericos();
+    }); 
+
+    async function main() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const lobbyId = urlParams.get('id');
+      const PartidaDados = await dadospartida(); // Aguarda a resolução da Promise e obtém os dados do lobby
+
+
+
+      if (!PartidaDados) {
+        console.error('Erro ao obter os dados da partida.');
+        return;
+      }
+
+      const playersCor = await playersCores();
+      if (!playersCor) {
+        console.error('Erro ao obter os dados dos jogadores.');
+        return;
+      }
+
+      const cores = atribuirCores();
+      let Jogadores = [];
+
+      for (let i = 0; i < PartidaDados.playerSlots.length; i++) {
+        const jogadorId = PartidaDados.playerSlots[i].id;
+        const jogadorNome = PartidaDados.playerSlots[i].nome;
+        const Cor = cores[i]; // Atribui a cor ao jogador
+
+        // Cria um objeto para representar o jogador com o ID, nome e cor
+        const jogador = {
+          id: jogadorId,
+          nome: jogadorNome,
+          cor: Cor
+        };
+
+        // Adiciona o jogador ao array Jogadores
+        Jogadores.push(jogador);
+      }
+
+      // Atualiza os dados do lobby com os novos dados dos jogadores
+      PartidaDados.playerSlots = Jogadores;
+
+      // Atualiza o lobby no servidor
+      await atualizarParcialmenteLobby(lobbyId, PartidaDados);
+
+      // Aplicar cores aos territórios
+
+      console.log("Jogadores atualizados:");
+    
+ //     aplicarCores(PartidaDados);
+    
+
+    }
+
+    // Chama a função principal
+    main();
+    
+  </script>
+</body>
+</html>
